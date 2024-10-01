@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMultipleMeals(10); // Henter 10 tilfældige måltider, når DOM'en er klar
 });
 
+let savedMeals = []; // Variabel til at gemme måltiderne
+
 // Funktion til at hente et tilfældigt måltid fra API'et
 async function fetchRandomMeal() {
     try {
@@ -21,17 +23,17 @@ async function loadMultipleMeals(count) {
     const mealdb = document.getElementById('my-container');
     mealdb.innerHTML = ''; // Rydder containeren, inden vi indsætter nye links
 
-    const mealsArray = [];
+    savedMeals = []; // Rydder den gemte liste over måltider
 
     for (let i = 0; i < count; i++) {
         const meal = await fetchRandomMeal();
         if (meal) {
-            mealsArray.push(meal);
+            savedMeals.push(meal);
         }
     }
 
     // Tilføjer links til DOM'en for hvert måltid
-    mealsArray.forEach(meal => {
+    savedMeals.forEach(meal => {
         const mealLink = document.createElement('a');
         mealLink.href = '#'; // Gør linket internt, så vi ikke forlader siden
         mealLink.textContent = meal.strMeal; // Viser måltidets navn som linktekst
@@ -75,11 +77,41 @@ function displayRecipe(meal) {
         }
     }
 
+    // Tilføjer en "Tilbage"-knap
+    const backButton = document.createElement('button');
+    backButton.textContent = 'Tilbage';
+    backButton.addEventListener('click', () => {
+        displayMealList(); // Går tilbage til måltidslisten
+    });
+
     // Tilføj elementer til DOM'en
     mealdb.appendChild(mealTitle);
     mealdb.appendChild(mealImage);
     mealdb.appendChild(mealInstructions);
     mealdb.appendChild(ingredientsList);
+    mealdb.appendChild(backButton); // Tilføj "Tilbage"-knappen
+}
+
+// Funktion til at vise listen over gemte måltider igen
+function displayMealList() {
+    const mealdb = document.getElementById('my-container');
+    mealdb.innerHTML = ''; // Rydder containeren for at vise måltidslisten
+
+    // Genskab måltidslinkene fra den gemte liste
+    savedMeals.forEach(meal => {
+        const mealLink = document.createElement('a');
+        mealLink.href = '#'; // Gør linket internt
+        mealLink.textContent = meal.strMeal; // Viser måltidets navn som linktekst
+        mealLink.addEventListener('click', (e) => {
+            e.preventDefault(); // Forhindrer den normale linkopførsel
+            displayRecipe(meal); // Kalder funktionen til at vise opskriften
+        });
+        mealdb.appendChild(mealLink);
+
+        // Tilføjer en line break mellem hvert link
+        const lineBreak = document.createElement('br');
+        mealdb.appendChild(lineBreak);
+    });
 }
 
 // Eksporterer loadMultipleMeals som standard funktion
